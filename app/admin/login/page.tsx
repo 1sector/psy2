@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,19 +34,34 @@ export default function LoginPage() {
     setError("")
 
     try {
-      // В реальном приложении здесь будет запрос к API для аутентификации
-      // Имитация задержки запроса
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // Вход пользователя
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      })
 
-      // Для демонстрации: проверка на тестовые учетные данные
-      if (formData.email === "admin@example.com" && formData.password === "password") {
-        // Успешная аутентификация
+      if (signInError) throw signInError
+
+      if (data.user) {
+        // Проверяем, является ли пользователь администратором
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .single()
+
+        if (profileError) throw profileError
+
+        if (profileData.role !== "admin") {
+          throw new Error("У вас нет прав администратора")
+        }
+
+        // Перенаправляем на панель администратора
         router.push("/admin")
-      } else {
-        setError("Неверный email или пароль")
       }
     } catch (err) {
-      setError("Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
+      console.error("Ошибка при входе:", err)
+      setError(err instanceof Error ? err.message : "Произошла ошибка при входе. Пожалуйста, попробуйте снова.")
     } finally {
       setIsLoading(false)
     }
@@ -106,8 +122,8 @@ export default function LoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Link href="/" className="text-sm text-beige-700 hover:text-beige-900">
-            Вернуться на главную страницу
+          <Link href="/setup-admin" className="text-sm text-beige-700 hover:text-beige-900">
+            Настроить администратора
           </Link>
         </CardFooter>
       </Card>

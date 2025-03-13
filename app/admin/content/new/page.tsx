@@ -11,17 +11,24 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ContentImageUpload } from "@/components/admin/content-image-upload"
+import { saveContent, type ContentFormData } from "@/actions/content-actions"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CheckCircle, AlertCircle } from "lucide-react"
 
 export default function NewContentPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ContentFormData>({
     title: "",
     type: "",
     description: "",
     content: "",
-    image: null as File | null,
+    image: null,
   })
+  const [status, setStatus] = useState<{
+    type: "success" | "error" | null
+    message: string
+  }>({ type: null, message: "" })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -36,21 +43,51 @@ export default function NewContentPage() {
     setFormData((prev) => ({ ...prev, image: file }))
   }
 
+  // Обновите функцию handleSubmit в компоненте NewContentPage
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setStatus({ type: null, message: "" })
 
     try {
-      // В реальном приложении здесь будет отправка данных на сервер
-      console.log("Отправка данных:", formData)
+      // Validate form data
+      if (!formData.title || !formData.type || !formData.description || !formData.content) {
+        setStatus({
+          type: "error",
+          message: "Please fill in all required fields",
+        })
+        setIsSubmitting(false)
+        return
+      }
 
-      // Имитация задержки запроса
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      console.log("Submitting form data:", formData)
 
-      // Перенаправление на страницу со списком контента
-      router.push("/admin/content")
+      // Call the server action to save the content
+      const result = await saveContent(formData)
+      console.log("Save content result:", result)
+
+      if (result.success) {
+        setStatus({
+          type: "success",
+          message: result.message,
+        })
+
+        // Redirect after a short delay
+        setTimeout(() => {
+          router.push("/admin/content")
+        }, 1500)
+      } else {
+        setStatus({
+          type: "error",
+          message: result.message,
+        })
+      }
     } catch (error) {
-      console.error("Ошибка при отправке данных:", error)
+      console.error("Error submitting form:", error)
+      setStatus({
+        type: "error",
+        message: "An unexpected error occurred. Please try again.",
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -59,6 +96,14 @@ export default function NewContentPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-6 text-3xl font-bold">Добавление нового контента</h1>
+
+      {status.type && (
+        <Alert variant={status.type === "error" ? "destructive" : "default"} className="mb-6">
+          {status.type === "success" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          <AlertDescription>{status.message}</AlertDescription>
+        </Alert>
+      )}
+
       <Card className="border-beige-200">
         <CardHeader>
           <CardTitle>Информация о контенте</CardTitle>

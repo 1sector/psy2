@@ -24,9 +24,6 @@ export function Navbar() {
             <Link href="/services" className="text-beige-700 hover:text-beige-900">
               Services
             </Link>
-            <Link href="/tests" className="text-beige-700 hover:text-beige-900">
-              Тесты
-            </Link>
             <Link href="/resources" className="text-beige-700 hover:text-beige-900">
               Resources
             </Link>
@@ -75,13 +72,6 @@ export function Navbar() {
               Services
             </Link>
             <Link
-              href="/tests"
-              className="rounded-md px-3 py-2 text-beige-700 hover:bg-beige-100 hover:text-beige-900"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Тесты
-            </Link>
-            <Link
               href="/resources"
               className="rounded-md px-3 py-2 text-beige-700 hover:bg-beige-100 hover:text-beige-900"
               onClick={() => setIsMenuOpen(false)}
@@ -111,3 +101,4 @@ export function Navbar() {
     </nav>
   )
 }
+

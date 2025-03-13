@@ -11,7 +11,7 @@ export interface Database {
           email: string
           full_name: string
           avatar_url: string | null
-          role: "client" | "therapist"
+          role: "client" | "therapist" | "admin"
         }
         Insert: {
           id: string
@@ -20,7 +20,7 @@ export interface Database {
           email: string
           full_name: string
           avatar_url?: string | null
-          role: "client" | "therapist"
+          role: "client" | "therapist" | "admin"
         }
         Update: {
           id?: string
@@ -29,7 +29,7 @@ export interface Database {
           email?: string
           full_name?: string
           avatar_url?: string | null
-          role?: "client" | "therapist"
+          role?: "client" | "therapist" | "admin"
         }
       }
       therapist_clients: {

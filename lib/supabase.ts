@@ -1,8 +1,24 @@
 import { createClient } from "@supabase/supabase-js"
+import type { Database } from "@/lib/database.types"
 
-const supabaseUrl = "https://vcnhfjjlmndslnbprati.supabase.co"
-const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbmhmampsbW5kc2xuYnByYXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3NjcyMjgsImV4cCI6MjA1NzM0MzIyOH0.p3Zxo7yleAenyDlgGQqSi9jFEHQ5GfVSDNOMZ3yBme8"
+// Используем переменные окружения с fallback значениями
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+  // Добавляем настройки для улучшения обработки сетевых ошибок
+  global: {
+    fetch: (...args) => {
+      return fetch(...args)
+    },
+    headers: {
+      "X-Client-Info": "supabase-js/2.x",
+    },
+  },
+})
 
